@@ -37,4 +37,5 @@ from rest_framework import permissions
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls', namespace='users')),
+    path('files/', include('files.urls', namespace='files')),
 ]
