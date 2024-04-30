@@ -5,15 +5,15 @@ from users.models import User
 
 @app.task
 def send_mail_user_task():
+    """ Проверка статуса загруженных файлов и отправка писем приизменении статуса"""
     check_status()
 
 
 @app.task
-def send_mail_admins_task(obj_author):
+def send_mail_admins_task(subject, message):
+    """ Отправка писем админам, если был загружен новый файл"""
     users_email = []
     users = User.objects.filter(is_staff=True, is_active=True)
     for user in users:
         users_email.append(user.email)
-    subject_ = 'Новый файл!'
-    message_ = f'На портал загружен новый файл от пользователя {obj_author}.'
-    send_mail_users(users_email, subject_, message_)
+    send_mail_users(users_email, subject, message)
