@@ -22,6 +22,6 @@ class File(models.Model):
     def __str__(self):
         return f'{self.title}'
 
-    class MEta:
+    class Meta:
         verbose_name = 'файл'
         verbose_name_plural = 'Файлы'
