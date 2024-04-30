@@ -162,3 +162,17 @@ CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 CELERY_BROKER_TRAnSPORT_OPTIONS = {'visibiliity_timeout': 60}
 CELERY_TIMEZONE = os.getenv('CELERY_TIMEZONE')
 # CELERY_TASK_TRACK_STARTED = True
+
+# Djanfo cors header
+# https://pypi.org/project/django-cors-headers/
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://0.0.0.0:8000',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://0.0.0.0:8000',
+]
+
+CORS_ALLOW_ALL_ORIGINS = False
