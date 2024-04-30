@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /data/postgres
+#    command: sh -c "psql -U postgres && create database '${DB_NAME}';"
+    env_file:
+      - .env
+    ports:
+      - "5430:5432"
+    healthcheck:
+      test: pg_isready -U ${DB_USER} -d ${DB_NAME}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  django:
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build: .
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    command: sh -c "python3 manage.py migrate && python3 manage.py create_su && python3 manage.py runserver 0.0.0.0:8000"
+
+  redis:
+    restart: on-failure
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  celery:
+    restart: on-failure
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    build: .
+    env_file:
+      - .env
+    tty: true
+    command: sh -c "celery -A config worker -l INFO"
+
+  celery_beat:
+    restart: on-failure
+    depends_on:
+      redis:
+        condition: service_healthy
+      django:
+        condition: service_started
+    build: .
+    env_file:
+      - .env
+    tty: true
+    command: sh -c "sleep 5 && celery -A config beat -l INFO -S django"
+
+
+volumes:
+  pg_data:
